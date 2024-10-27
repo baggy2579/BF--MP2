@@ -1,0 +1,76 @@
+---
+title: "Insurance forecasting"
+author: "Alfazkhan"
+date: "2024-10-26"
+output: html_document
+---
+
+``` {r}
+library(readr)
+library(fpp2)
+library(ggplot2)
+library(forecast)
+
+insurance <- read.csv("C:/Users/Alfaz Khan/OneDrive/Desktop/insurance.csv")
+ins <- insurance
+
+ins_ts <- ts(ins$TV.advert, start = c(2002,6), frequency = 12)
+plot(ins_ts)
+
+ins_decompose <- decompose(ins_ts)
+plot(ins_decompose)
+
+```
+
+```{r}
+#naive forecasting
+ins_naive<-naive(ins_ts,h=12)
+plot(ins_naive, main = "Naive Forecasting")
+naive_residue<-residuals(ins_naive)
+plot(naive_residue, main = "Naive Forecasting Residue")
+
+#moving average forecasting
+ins_maf<-ma(ins_ts,order=12)
+plot(ins_maf, main = "Moving Average Forecasting")
+maf_residue<-ins_ts-ins_maf
+plot(maf_residue, main = "Moving Average Forecasting Residue")
+
+#Exponential smoothing forecasting
+ins_ses<-ses(ins_ts,h=12)
+plot(ins_ses, main = "Exponential smoothing Forecasting")
+ses_residual<-residuals(ins_ses)
+plot(ses_residual, main = "Exponential Smoothing Forecasting Residue")
+
+#HoltsWinter forecasting
+ins_hw<-hw(ins_ts)
+plot(ins_hw, main = "HoltsWinter Forecasting")
+hw_residual<-residuals(ins_hw)
+plot(hw_residual, main = "HoltsWinter Forecasting Residue")
+
+## Seasonal and Trend decomposition
+stl_decom<-stl(insu_ts,s.window = "periodic")
+plot(stl_decom)
+stl_forecast<-forecast(stl_decom,h=12)
+plot(stl_forecast)
+
+trend_forecast <- forecast(decomposed$trend, h=12)
+plot(trend_forecast, main="Classical Decomposition Forecast")
+
+# Calculate accuracy 
+naive_acc <- accuracy(naive_insu)
+ses_acc <- accuracy(insu_ses)
+hw_acc <- accuracy(hw_insu)
+decomp_acc <- accuracy(stl_forecast)
+
+# Summary of accuracy measures 
+accuracy_summary <- data.frame(
+  Model = c("Naive", "Exponential Smoothing", "Holt-Winters", "Decomposition"),
+  MAE = c(naive_acc[1, "MAE"], ses_acc[1, "MAE"], hw_acc[1, "MAE"], decomp_acc[1, "MAE"]),
+  RMSE = c(naive_acc[1, "RMSE"], ses_acc[1, "RMSE"], hw_acc[1, "RMSE"], decomp_acc[1, "RMSE"])
+)
+print(accuracy_summary)
+
+# 12 month final forecast
+final_forecast <- forecast(stl_forecast, h=12)
+plot(final_forecast, main="12-Month Forecast")
+```
